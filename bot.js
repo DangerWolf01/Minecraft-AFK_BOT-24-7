@@ -5,7 +5,7 @@ function createBot() {
         host: 'DangerWolf01.aternos.me', // <--- REEMPLAZA ESTO POR LA IP DE TU SERVER
         port: 11623,                // Puerto predeterminado de Minecraft
         username: 'DangerBot01',    // Nombre genérico del bot/NPC dentro del juego
-        version: true              // Autodetecta la versión exacta del servidor (1.8 a 1.21+)
+        version: false              // Autodetecta la versión exacta del servidor (1.8 a 1.21+)
     });
 
     bot.on('spawn', () => {
@@ -49,7 +49,7 @@ function createBot() {
             // 4. Ejecutar acción de salto físico para evitar la inactividad (Anti-AFK)
             await new Promise(resolve => setTimeout(resolve, 1000));
             bot.setControlState('jump', true);
-            setTimeout(() => bot.setControlState('jump', true), 500);
+            setTimeout(() => bot.setControlState('jump', false), 500);
             console.log('[NPC] Acción anti-inactividad completada con éxito.');
 
         } catch (err) {
