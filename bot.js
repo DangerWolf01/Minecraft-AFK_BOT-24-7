@@ -5,7 +5,7 @@ function createBot() {
         host: 'OtraCosa.aternos.me', // <--- REEMPLAZA ESTO POR LA IP DE TU SERVER
         port: 29577,                // Puerto predeterminado de Minecraft
         username: 'DangerBot01',    // Nombre genérico del bot/NPC dentro del juego
-        version: false              // Autodetecta la versión exacta del servidor (1.8 a 1.21+)
+        version: '26.1'              // Autodetecta la versión exacta del servidor (1.8 a 1.21+)
     });
 
     bot.on('spawn', () => {
