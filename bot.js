@@ -49,7 +49,7 @@ function createBot() {
             // 4. Ejecutar acción de salto físico para evitar la inactividad (Anti-AFK)
             await new Promise(resolve => setTimeout(resolve, 1000));
             bot.setControlState('jump', true);
-            setTimeout(() => bot.setControlState('jump', false), 500);
+            setTimeout(() => bot.setControlState('jump', true), 500);
             console.log('[NPC] Acción anti-inactividad completada con éxito.');
 
         } catch (err) {
