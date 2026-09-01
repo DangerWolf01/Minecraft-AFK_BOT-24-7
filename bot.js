@@ -2,93 +2,68 @@ const mineflayer = require('mineflayer');
 
 function createBot() {
     const bot = mineflayer.createBot({
-        host: 'OtraCosa.aternos.me', 
-        port: 29577,                
-        username: 'DangerBot01',    
-        version: '26.2' // Recomiendo forzar versión fija si la autodetección en Aternos falla o da error de datos
-    });
-
-    let afkInterval = null; // Guardamos el temporizador aquí para poder destruirlo al desconectar
-
-    bot.on('login', () => {
-        console.log(`[NPC] Conexión establecida con el servidor de Minecraft.`);
+        host: 'OtraCosa.aternos.me', // <--- REEMPLAZA ESTO POR LA IP DE TU SERVER
+        port: 25565,                // Puerto predeterminado de Minecraft
+        username: 'Raboot_356',    // Nombre genérico del bot/NPC dentro del juego
+        version: false              // Autodetecta la versión exacta del servidor (1.8 a 1.21+)
     });
 
     bot.on('spawn', () => {
         console.log(`[NPC] El bot ha aparecido correctamente en el mapa.`);
         // Si tu servidor No-Premium requiere contraseña, descomenta la línea de abajo:
         // setTimeout(() => bot.chat('/login erickJKN'), 4000);
-
-        // Iniciamos la rutina SOLO cuando el bot ya existe en el mapa
-        iniciarRutinaAFK(bot);
     });
 
-    function iniciarRutinaAFK(botInstance) {
-        // Limpiamos cualquier bucle previo por seguridad
-        if (afkInterval) clearInterval(afkInterval);
+    bot.on('login', () => {
+        console.log(`[NPC] Conexión establecida con el servidor de Minecraft.`);
+    });
 
-        afkInterval = setInterval(async () => {
-            // Validación estricta de que el bot sigue vivo y conectado
-            if (!botInstance || !botInstance.entity) return;
+    // Rutina automatizada del NPC: Buscar cofre, interactuar, cerrar y saltar (Cada 45 segundos)
+    setInterval(async () => {
+        if (!bot || !bot.entity) return;
 
-            try {
-                // Buscamos el cofre usando el registro del bot ya spawneado
-                const chestBlock = botInstance.findBlock({
-                    matching: botInstance.registry.blocksByName.chest.id,
-                    maxDistance: 5
-                });
+        try {
+            // 1. Localizar el bloque de cofre en un radio de 5 bloques
+            const chestBlock = bot.findBlock({
+                matching: bot.registry.blocksByName.chest.id,
+                maxDistance: 5
+            });
 
-                if (chestBlock) {
-                    console.log('[NPC] Interactuando con el contenedor cercano...');
-                    
-                    // Abrir el contenedor
-                    const chest = await botInstance.openChest(chestBlock);
-                    console.log('[NPC] Contenedor abierto.');
-                    
-                    // Esperar 2 segundos
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    
-                    // Cerrar el contenedor de forma segura verificando que siga ahí
-                    if (chest) chest.close();
-                    console.log('[NPC] Contenedor cerrado.');
-                } else {
-                    console.log('[NPC] Aviso: No se detectó ningún contenedor válido cerca.');
-                }
-
-                // Acción de salto físico anti-inactividad
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                if (botInstance.entity) {
-                    botInstance.setControlState('jump', true);
-                    setTimeout(() => {
-                        if (botInstance.entity) botInstance.setControlState('jump', false);
-                    }, 500);
-                    console.log('[NPC] Acción anti-inactividad completada con éxito.');
-                }
-
-            } catch (err) {
-                console.log(`[NPC] Error en el ciclo de ejecución: ${err.message}`);
+            if (chestBlock) {
+                console.log('[NPC] Interactuando con el contenedor cercano...');
+                
+                // 2. Abrir el contenedor (genera la animación y sonido físico en el servidor)
+                const chest = await bot.openChest(chestBlock);
+                console.log('[NPC] Contenedor abierto.');
+                
+                // Mantener la interfaz abierta durante 2 segundos simulando actividad de inventario
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // 3. Cerrar la interfaz del contenedor
+                chest.close();
+                console.log('[NPC] Contenedor cerrado.');
+            } else {
+                console.log('[NPC] Aviso: No se detectó ningún contenedor válido cerca.');
             }
-        }, 45000); // Cada 45 segundos
-    }
 
-    // Sistema de auto-reconexión limpia
-    bot.on('end', (reason) => {
-        console.log(`[NPC] Conexión finalizada por: ${reason}. Deteniendo rutinas...`);
-        
-        // CRÍTICO: Destruir el temporizador para que no se duplique al reconectar
-        if (afkInterval) {
-            clearInterval(afkInterval);
-            afkInterval = null;
+            // 4. Ejecutar acción de salto físico para evitar la inactividad (Anti-AFK)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            bot.setControlState('jump', true);
+            setTimeout(() => bot.setControlState('jump', false), 500);
+            console.log('[NPC] Acción anti-inactividad completada con éxito.');
+
+        } catch (err) {
+            console.log(`[NPC] Error en el ciclo de ejecución: ${err.message}`);
         }
+    }, 45000);
 
-        console.log(`[NPC] Reintentando conexión en 25 segundos...`);
+    // Sistema de auto-reconexión segura tras expulsiones o reinicios del servidor
+    bot.on('end', (reason) => {
+        console.log(`[NPC] Conexión finalizada por: ${reason}. Reintentando en 25 segundos...`);
         setTimeout(createBot, 25000);
     });
 
-    bot.on('error', (err) => {
-        console.log(`[NPC] Error de red detectado: ${err.message}`);
-        // No llamamos a createBot aquí porque el evento 'end' se disparará justo después automáticamente
-    });
+    bot.on('error', (err) => console.log(`[NPC] Error crítico de red detectado: ${err}`));
 }
 
 createBot();
