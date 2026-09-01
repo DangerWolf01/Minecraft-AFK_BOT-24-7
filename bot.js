@@ -5,7 +5,7 @@ function createBot() {
         host: 'OtraCosa.aternos.me', 
         port: 29577,                
         username: 'DangerBot01',    
-        version: '1.21.1' // Recomiendo forzar versión fija si la autodetección en Aternos falla o da error de datos
+        version: '26.2' // Recomiendo forzar versión fija si la autodetección en Aternos falla o da error de datos
     });
 
     let afkInterval = null; // Guardamos el temporizador aquí para poder destruirlo al desconectar
